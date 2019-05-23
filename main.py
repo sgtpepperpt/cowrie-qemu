@@ -160,11 +160,9 @@ def createNetwork(connection):
             exit(1)
 
         # set the network active
-        net.create()
-        if net.isActive() == 1:
-            print('The new transient virtual network is active')
-        else:
-            print('The new transient virtual network is not active')
+        # not needed since apparently transient networks are created as active; uncomment if persistent
+        # net.create()
+
         return net
     except libvirt.libvirtError as e:
         print(e)
