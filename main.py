@@ -1,5 +1,7 @@
 import sys
 import libvirt
+import subprocess
+from time import sleep
 
 guestXML = '''
 <domain type='qemu'>
@@ -181,6 +183,11 @@ def transient(conn, network):
     print(dom.XMLDesc())
 
 
+def ping():
+    out = subprocess.run(['ping', '-c 1', '192.168.150.15'], capture_output=True)
+    return out.returncode
+
+
 def main():
     # open connection to libvirt
     conn = libvirt.open('qemu:///system')
@@ -199,6 +206,13 @@ def main():
 
     # use guest
     # transient(conn, network)
+
+    # wait until network is up in guest
+    while ping() != 0:
+        sleep(1)
+        print('Guest not ready')
+
+    # now backend is ready for connections
 
     # destroy created guest
     dom.destroy()
