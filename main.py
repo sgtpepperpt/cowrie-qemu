@@ -1,6 +1,10 @@
+import os
 import sys
 import libvirt
+import shutil
+import getpass
 import subprocess
+import random
 from time import sleep
 
 guestXML = '''
@@ -25,6 +29,7 @@ guestXML = '''
         <suspend-to-mem enabled='no'/>
         <suspend-to-disk enabled='no'/>
     </pm>
+
     <devices>
         <emulator>/usr/bin/qemu-system-x86_64</emulator>
 
@@ -109,7 +114,6 @@ guestXML = '''
 </domain>
 '''
 
-
 networkXML = '''
 <network>
     <name>{networkName}</name>
@@ -124,10 +128,18 @@ networkXML = '''
 </network>
 '''
 
-guestConfig = guestXML.format(guestName='ubuntu18.04-experimental',
-                              diskImage='/var/lib/libvirt/images/ubuntu18.04.qcow2',
-                              macAddress='aa:bb:cc:dd:ee:ff',
-                              networkName='cowrie')
+snapshotXML = '''
+<domainsnapshot>
+    <memory snapshot='no'/>
+    <disks>
+        <disk name='/var/lib/libvirt/images/ubuntu18.04.qcow2'>
+            <driver type='qcow2'/>
+            <source file='/var/lib/libvirt/images/ubuntu18.04snapshot.qcow2'/>
+        </disk>
+    </disks>
+</domainsnapshot>
+'''
+
 
 networkConfig = networkXML.format(networkName='cowrie',
                                   ifaceName='virbr2',
@@ -138,7 +150,12 @@ networkConfig = networkXML.format(networkName='cowrie',
                                   ipAddress0='192.168.150.15')
 
 
-def createGuest(connection):
+def create_guest(connection, diskImg):
+    guestConfig = guestXML.format(guestName='ubuntu18.04-experimental',
+                                  diskImage=diskImg,
+                                  macAddress='aa:bb:cc:dd:ee:ff',
+                                  networkName='cowrie')
+
     try:
         dom = connection.createXML(guestConfig, 0)
         if dom is None:
@@ -153,7 +170,7 @@ def createGuest(connection):
         return connection.lookupByName('ubuntu18.04-experimental')
 
 
-def createNetwork(connection):
+def create_network(connection):
     try:
         # create a transient virtual network
         net = connection.networkCreateXML(networkConfig)
@@ -172,20 +189,41 @@ def createNetwork(connection):
         return connection.networkLookupByName('cowrie')
 
 
-def transient(conn, network):
-    dom = createGuest(conn)
-    if dom is None:
-        print('Failed to find the domain ' + 'QEmu-ubuntu', file=sys.stderr)
-        exit(1)
+def tests(dom, network):
     type = dom.info()
     print('The name of the domain is "' + str(type) + '".')
 
-    print(dom.XMLDesc())
+    # print(dom.XMLDesc())
+
+    flag = dom.hasCurrentSnapshot()
+    print('The value of the current snapshot flag is ' + str(flag))
 
 
 def ping():
     out = subprocess.run(['ping', '-c 1', '192.168.150.15'], capture_output=True)
-    return out.returncode
+    return out.returncode == 0
+
+
+def nmap_ssh():
+    out = subprocess.run(['nmap', '192.168.150.15', '-PN',  '-p ssh'], capture_output=True)
+    return out.returncode == 0 and b'open' in out.stdout
+
+
+def create_disk_snapshot(source_img, destination_img):
+    # s = domain.listAllSnapshots()
+    # ret = domain.snapshotCreateXML(snapshotXML, libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY)
+
+    shutil.chown(source_img, getpass.getuser())
+    out = subprocess.run(['qemu-img', 'create', '-f', 'qcow2', '-b', source_img, destination_img], capture_output=True)
+    return out.returncode == 0
+
+
+def generate_image_path(base_path, image_tag):
+    while True:
+        seed = random.getrandbits(32)
+        path = base_path + 'snapshot-{0}-{1}-qcow2.img'.format(image_tag, seed)
+        if not os.path.isfile(path):
+            return path
 
 
 def main():
@@ -196,19 +234,26 @@ def main():
         exit(1)
 
     # create a NAT for the guests
-    network = createNetwork(conn)
+    network = create_network(conn)
+
+    # create a disk snapshot to be used by the guest
+    source_img = '/home/gb/Repositories/qemu/ubuntu18.04.qcow2'
+    destination_img = generate_image_path('/home/gb/Repositories/qemu/', 'ubuntu18.04')
+    if not create_disk_snapshot(source_img, destination_img):
+        print('There was a problem creating the disk snapshot.', file=sys.stderr)
+        exit(1)
 
     # create a single guest
-    dom = createGuest(conn)
+    dom = create_guest(conn, destination_img)
     if dom is None:
         print('Failed to find the domain ' + 'QEmu-ubuntu', file=sys.stderr)
         exit(1)
 
     # use guest
-    # transient(conn, network)
+    tests(dom, network)
 
     # wait until network is up in guest
-    while ping() != 0:
+    while not nmap_ssh():
         sleep(1)
         print('Guest not ready')
 
@@ -216,6 +261,9 @@ def main():
 
     # destroy created guest
     dom.destroy()
+
+    # destroy its disk snapshot
+    os.remove(destination_img)
 
     # destroy transient network
     network.destroy()
