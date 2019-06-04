@@ -51,8 +51,10 @@ def main():
         print('Guest not ready')
 
     # now backend is ready for connections
+    print('Guest ready for SSH connections!')
 
     # destroy created guest
+    print('Destroying guest!')
     dom.destroy()
 
     # destroy its disk snapshot
