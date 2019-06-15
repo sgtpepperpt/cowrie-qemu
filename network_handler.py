@@ -1,34 +1,22 @@
 import sys
 import libvirt
 
-networkXML = '''
-<network>
-    <name>{networkName}</name>
-    <forward mode='nat'/>
-    <bridge name='{ifaceName}' stp='on' delay='0'/>
-    <ip address='{defaultGateway}' netmask='255.255.255.0'>
-        <dhcp>
-            <range start='{dhcpRangeStart}' end='{dhcpRangeEnd}'/>
-            <host mac='{macAddress0}' name='vm1' ip='{ipAddress0}'/>
-        </dhcp>
-    </ip>
-</network>
-'''
-
-
-networkConfig = networkXML.format(networkName='cowrie',
-                                  ifaceName='virbr2',
-                                  defaultGateway='192.168.150.1',
-                                  dhcpRangeStart='192.168.150.127',
-                                  dhcpRangeEnd='192.168.150.254',
-                                  macAddress0='aa:bb:cc:dd:ee:ff',
-                                  ipAddress0='192.168.150.15')
+import util
 
 
 def create_network(connection):
+    network_xml = util.read_file('config_files/default_network.xml')
+    network_config = network_xml.format(network_name='cowrie',
+                                        iface_name='virbr2',
+                                        default_gateway='192.168.150.1',
+                                        dhcp_range_start='192.168.150.127',
+                                        dhcp_range_end='192.168.150.254',
+                                        mac_address_0='aa:bb:cc:dd:ee:ff',
+                                        ip_address_0='192.168.150.15')
+
     try:
         # create a transient virtual network
-        net = connection.networkCreateXML(networkConfig)
+        net = connection.networkCreateXML(network_config)
         if net is None:
             print('Failed to define a virtual network', file=sys.stderr)
             exit(1)

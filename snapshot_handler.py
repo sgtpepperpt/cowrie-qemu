@@ -4,22 +4,13 @@ import subprocess
 import random
 import os
 
-snapshotXML = '''
-<domainsnapshot>
-    <memory snapshot='no'/>
-    <disks>
-        <disk name='/var/lib/libvirt/images/ubuntu18.04.qcow2'>
-            <driver type='qcow2'/>
-            <source file='/var/lib/libvirt/images/ubuntu18.04snapshot.qcow2'/>
-        </disk>
-    </disks>
-</domainsnapshot>
-'''
+import util
 
 
 def create_disk_snapshot(source_img, destination_img):
+    # snapshot_xml = util.read_file('config_files/default_snapshot.xml')
     # s = domain.listAllSnapshots()
-    # ret = domain.snapshotCreateXML(snapshotXML, libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY)
+    # ret = domain.snapshotCreateXML(snapshot_xml, libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY)
 
     shutil.chown(source_img, getpass.getuser())
     out = subprocess.run(['qemu-img', 'create', '-f', 'qcow2', '-b', source_img, destination_img], capture_output=True)

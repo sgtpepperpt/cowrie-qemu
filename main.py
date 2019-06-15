@@ -45,10 +45,13 @@ def main():
     # use guest
     tests(dom, network)
 
+    count = 0
+
     # wait until network is up in guest
     while not util.nmap_ssh():
         sleep(1)
-        print('Guest not ready')
+        print('{0} Guest not ready'.format(count))
+        count += 1
 
     # now backend is ready for connections
     print('Guest ready for SSH connections!')

@@ -9,3 +9,8 @@ def ping():
 def nmap_ssh():
     out = subprocess.run(['nmap', '192.168.150.15', '-PN',  '-p ssh'], capture_output=True)
     return out.returncode == 0 and b'open' in out.stdout
+
+
+def read_file(file_name):
+    with open(file_name, 'r') as file:
+        return file.read()
