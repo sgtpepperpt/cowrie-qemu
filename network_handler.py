@@ -10,10 +10,9 @@ def create_network(connection):
     sample_host = '<host mac=\'{mac_address}\' name=\'{name}\' ip=\'{ip_address}\'/>\n'
     hosts = ''
 
-    for i in range(2, 255):
-        mac_address = 'aa:bb:cc:dd:ee:' + hex(i)[2:]
-        vm_name = 'vm' + str(i)
-        ip_address = '192.168.150.' + str(i)
+    for guest_id in range(2, 255):
+        mac_address, ip_address = util.generate_mac_ip(guest_id)
+        vm_name = 'vm' + str(guest_id)
         hosts += sample_host.format(mac_address=mac_address, name=vm_name, ip_address=ip_address)
 
     network_config = network_xml.format(network_name='cowrie',

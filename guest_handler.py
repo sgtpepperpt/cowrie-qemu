@@ -1,14 +1,28 @@
+import os
 import sys
 import libvirt
 
+import snapshot_handler
 import util
 
 
-def create_guest(connection, disk_img):
+class QemuGuestError(Exception):
+    pass
+
+
+def create_guest(connection, mac_address):
+    # create a disk snapshot to be used by the guest
+    source_img = '/home/gb/Repositories/qemu/ubuntu18.04.qcow2'
+    disk_img = snapshot_handler.generate_image_path('/home/gb/Repositories/qemu/', 'ubuntu18.04')
+
+    if not snapshot_handler.create_disk_snapshot(source_img, disk_img):
+        print('There was a problem creating the disk snapshot.', file=sys.stderr)
+        raise QemuGuestError()
+
     guest_xml = util.read_file('config_files/default_guest.xml')
     guest_config = guest_xml.format(guest_name='ubuntu18.04-experimental',
                                     disk_image=disk_img,
-                                    mac_address='aa:bb:cc:dd:ee:ff',
+                                    mac_address=mac_address,
                                     network_name='cowrie')
 
     try:
@@ -18,8 +32,13 @@ def create_guest(connection, disk_img):
             exit(1)
 
         print('Guest '+dom.name()+' has booted', file=sys.stderr)
-        return dom
+        return dom, disk_img
     except libvirt.libvirtError as e:
         print(e)
         print('Guest already booted')
         return connection.lookupByName('ubuntu18.04-experimental')
+
+
+def destroy_guest(dom, disk_img):
+    dom.destroy()
+    os.remove(disk_img)  # destroy its disk snapshot

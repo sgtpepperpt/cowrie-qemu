@@ -1,4 +1,5 @@
 import subprocess
+import time
 
 
 def ping():
@@ -14,3 +15,14 @@ def nmap_ssh():
 def read_file(file_name):
     with open(file_name, 'r') as file:
         return file.read()
+
+
+def generate_mac_ip(guest_id):
+    # TODO support more
+    mac = 'aa:bb:cc:dd:ee:' + hex(guest_id)[2:]
+    ip = '192.168.150.' + str(guest_id)
+    return mac, ip
+
+
+def now():
+    return time.time()

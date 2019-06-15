@@ -27,6 +27,7 @@ class QemuService:
 
         # data structs
         self.guests = []
+        self.guest_id = 2
 
     def __del__(self):
         self.network.destroy()  # destroy transient network
@@ -35,16 +36,10 @@ class QemuService:
         print('Connection to Qemu closed successfully')
 
     def create_guest(self):
-        # create a disk snapshot to be used by the guest
-        source_img = '/home/gb/Repositories/qemu/ubuntu18.04.qcow2'
-        destination_img = snapshot_handler.generate_image_path('/home/gb/Repositories/qemu/', 'ubuntu18.04')
-
-        if not snapshot_handler.create_disk_snapshot(source_img, destination_img):
-            print('There was a problem creating the disk snapshot.', file=sys.stderr)
-            return None
+        guest_ip, guest_mac = util.generate_mac_ip(self.guest_id)
 
         # create a single guest
-        dom = guest_handler.create_guest(self.conn, destination_img)
+        dom, snapshot = guest_handler.create_guest(self.conn, guest_mac)
         if dom is None:
             print('Failed to find the domain ' + 'QEmu-ubuntu', file=sys.stderr)
             return None
@@ -60,15 +55,19 @@ class QemuService:
         # now backend is ready for connections
         print('Guest ready for SSH connections!')
 
-        # TODO must store ip of guest here too
         self.guests.append({
+            'id': self.guest_id,
             'domain': dom,
-            'state': 'available'
+            'snapshot': snapshot,
+            'state': 'available',
+            'ip': guest_ip
         })
+
+        self.guest_id += 1
 
     def request_guest(self, src_ip):
         # check if there is a guest associated with src_ip
-        with_ip = [g for g in self.guests if g['state'] == 'used' and g['ip'] == src_ip]
+        with_ip = [g for g in self.guests if g['state'] == 'used' and g['client_ip'] == src_ip]
         if len(with_ip) > 0:
             guest = with_ip[0]
             guest['state'] = 'in_use'
@@ -82,7 +81,24 @@ class QemuService:
 
         guest = available[0]
         guest['state'] = 'in_use'
-        guest['ip'] = src_ip
-        return guest['domain']
+        guest['client_ip'] = src_ip
+        return guest['id'], guest['ip']
 
+    def free_guest(self, guest_id):
+        guest = [g for g in self.guests if g['id'] == guest_id]
+        if len(guest) == 0:
+            return
 
+        guest[0]['state'] = 'used'
+        guest[0]['timestamp'] = util.now()
+
+    def available_guests(self):
+        return len([g for g in self.guests if g['state'] == 'available'])
+
+    def destroy_guest(self, guest_id):
+        guest = [g for g in self.guests if g['id'] == guest_id]
+        if len(guest) == 0:
+            return
+
+        guest[0]['state'] = 'destroyed'
+        guest_handler.destroy_guest(guest[0]['domain'], guest[0]['snapshot'])
