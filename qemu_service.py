@@ -1,7 +1,7 @@
 import sys
 import libvirt
 
-import networkHandler
+import network_handler
 
 
 def initialise():
@@ -12,7 +12,7 @@ def initialise():
         exit(1)
 
     # create a NAT for the guests
-    network = networkHandler.create_network(conn)
+    network = network_handler.create_network(conn)
 
     return conn, network
 
