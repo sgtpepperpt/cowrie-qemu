@@ -5,6 +5,8 @@ from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
+import qemu_service
+
 
 class PoolManager(Protocol):
     def __init__(self, factory):
@@ -55,8 +57,16 @@ class PoolManager(Protocol):
 class PoolManagerFactory(Factory):
     def __init__(self):
         self.initialised = False
+
+        # configs, come from client
         self.max_vm = 0
         self.vm_unused_timeout = 0
+
+        # qemu handling
+        self.qemu = None
+
+    def startFactory(self):
+        self.qemu = qemu_service.QemuService()
 
     def buildProtocol(self, addr):
         print('Received connection from {0}:{1}'.format(addr.host, addr.port))
