@@ -5,7 +5,7 @@
     <ip address='{default_gateway}' netmask='255.255.255.0'>
         <dhcp>
             <range start='{dhcp_range_start}' end='{dhcp_range_end}'/>
-            <host mac='{mac_address_0}' name='vm1' ip='{ip_address_0}'/>
+            {hosts}
         </dhcp>
     </ip>
 </network>
