@@ -3,9 +3,9 @@ import sys
 import libvirt
 from time import sleep
 
-import guestHandler
-import networkHandler
-import snapshotHandler
+import guest_handler
+import network_handler
+import snapshot_handler
 import util
 
 
@@ -27,17 +27,17 @@ def main():
         exit(1)
 
     # create a NAT for the guests
-    network = networkHandler.create_network(conn)
+    network = network_handler.create_network(conn)
 
     # create a disk snapshot to be used by the guest
     source_img = '/home/gb/Repositories/qemu/ubuntu18.04.qcow2'
-    destination_img = snapshotHandler.generate_image_path('/home/gb/Repositories/qemu/', 'ubuntu18.04')
-    if not snapshotHandler.create_disk_snapshot(source_img, destination_img):
+    destination_img = snapshot_handler.generate_image_path('/home/gb/Repositories/qemu/', 'ubuntu18.04')
+    if not snapshot_handler.create_disk_snapshot(source_img, destination_img):
         print('There was a problem creating the disk snapshot.', file=sys.stderr)
         exit(1)
 
     # create a single guest
-    dom = guestHandler.create_guest(conn, destination_img)
+    dom = guest_handler.create_guest(conn, destination_img)
     if dom is None:
         print('Failed to find the domain ' + 'QEmu-ubuntu', file=sys.stderr)
         exit(1)

@@ -109,14 +109,14 @@ guestXML = '''
 '''
 
 
-def create_guest(connection, diskImg):
-    guestConfig = guestXML.format(guestName='ubuntu18.04-experimental',
-                                  diskImage=diskImg,
-                                  macAddress='aa:bb:cc:dd:ee:ff',
-                                  networkName='cowrie')
+def create_guest(connection, disk_img):
+    guest_config = guestXML.format(guestName='ubuntu18.04-experimental',
+                                   diskImage=disk_img,
+                                   macAddress='aa:bb:cc:dd:ee:ff',
+                                   networkName='cowrie')
 
     try:
-        dom = connection.createXML(guestConfig, 0)
+        dom = connection.createXML(guest_config, 0)
         if dom is None:
             print('Failed to create a domain from an XML definition.', file=sys.stderr)
             exit(1)
