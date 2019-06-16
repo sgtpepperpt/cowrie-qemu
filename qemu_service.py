@@ -1,11 +1,11 @@
 import sys
 import libvirt
+import uuid
 import util
 from time import sleep
 
 import guest_handler
 import network_handler
-import snapshot_handler
 
 
 class QemuError(Exception):
@@ -36,10 +36,11 @@ class QemuService:
         print('Connection to Qemu closed successfully')
 
     def create_guest(self):
-        guest_ip, guest_mac = util.generate_mac_ip(self.guest_id)
+        guest_mac, guest_ip = util.generate_mac_ip(self.guest_id)
+        unique_id = uuid.uuid4().hex
 
         # create a single guest
-        dom, snapshot = guest_handler.create_guest(self.conn, guest_mac)
+        dom, snapshot = guest_handler.create_guest(self.conn, guest_mac, unique_id)
         if dom is None:
             print('Failed to find the domain ' + 'QEmu-ubuntu', file=sys.stderr)
             return None
@@ -47,7 +48,7 @@ class QemuService:
         count = 0
 
         # wait until network is up in guest
-        while not util.nmap_ssh():
+        while not util.nmap_ssh(guest_ip):
             sleep(1)
             print('{0} Guest not ready'.format(count))
             count += 1

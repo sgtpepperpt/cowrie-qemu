@@ -10,17 +10,19 @@ class QemuGuestError(Exception):
     pass
 
 
-def create_guest(connection, mac_address):
+def create_guest(connection, mac_address, unique_id):
+    version_tag = 'ubuntu18.04'
+
     # create a disk snapshot to be used by the guest
     source_img = '/home/gb/Repositories/qemu/ubuntu18.04.qcow2'
-    disk_img = snapshot_handler.generate_image_path('/home/gb/Repositories/qemu/', 'ubuntu18.04')
+    disk_img = '/home/gb/Repositories/qemu/snapshot-{0}-{1}-qcow2.img'.format(version_tag, unique_id)
 
     if not snapshot_handler.create_disk_snapshot(source_img, disk_img):
         print('There was a problem creating the disk snapshot.', file=sys.stderr)
         raise QemuGuestError()
 
     guest_xml = util.read_file('config_files/default_guest.xml')
-    guest_config = guest_xml.format(guest_name='ubuntu18.04-experimental',
+    guest_config = guest_xml.format(guest_name='ubuntu18.04-experimental-' + unique_id,
                                     disk_image=disk_img,
                                     mac_address=mac_address,
                                     network_name='cowrie')
