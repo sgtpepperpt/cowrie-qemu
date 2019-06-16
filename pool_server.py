@@ -8,7 +8,7 @@ from twisted.internet import reactor
 import qemu_service
 
 
-class PoolManager(Protocol):
+class PoolServer(Protocol):
     def __init__(self, factory):
         self.factory = factory
 
@@ -54,7 +54,7 @@ class PoolManager(Protocol):
             self.transport.write(response)
 
 
-class PoolManagerFactory(Factory):
+class PoolServerFactory(Factory):
     def __init__(self):
         self.initialised = False
 
@@ -70,9 +70,9 @@ class PoolManagerFactory(Factory):
 
     def buildProtocol(self, addr):
         print('Received connection from {0}:{1}'.format(addr.host, addr.port))
-        return PoolManager(self)
+        return PoolServer(self)
 
 
 endpoint = TCP4ServerEndpoint(reactor, 3574)
-endpoint.listen(PoolManagerFactory())
+endpoint.listen(PoolServerFactory())
 reactor.run()

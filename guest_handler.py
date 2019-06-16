@@ -33,14 +33,9 @@ def create_guest(connection, mac_address, unique_id):
             print('Failed to create a domain from an XML definition.', file=sys.stderr)
             exit(1)
 
-        print('Guest '+dom.name()+' has booted', file=sys.stderr)
+        print('Guest ' + dom.name() + ' has booted', file=sys.stderr)
         return dom, disk_img
     except libvirt.libvirtError as e:
         print(e)
         print('Guest already booted')
         return connection.lookupByName('ubuntu18.04-experimental')
-
-
-def destroy_guest(dom, disk_img):
-    dom.destroy()
-    os.remove(disk_img)  # destroy its disk snapshot
