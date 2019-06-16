@@ -28,6 +28,26 @@ class PoolService:
         self.guest_id = 2
         self.guest_lock = Lock()
 
+        # configs
+        self.max_vm = 2
+        self.vm_unused_timeout = 600
+
+    def __del__(self):
+        print('Trying clean shutdown')
+
+        self.guest_lock.acquire()
+        try:
+            running_guests = [g for g in self.guests if g['state'] != 'destroyed']
+            for guest in running_guests:
+                self.qemu.destroy_guest(guest['domain'], guest['snapshot'])
+                guest['state'] = 'destroyed'
+        finally:
+            self.guest_lock.release()
+
+    def set_configs(self, max_vm, vm_unused_timeout):
+        self.max_vm = max_vm
+        self.vm_unused_timeout = vm_unused_timeout
+
     def get_vm_states(self, states):
         return [g for g in self.guests if g['state'] in states]
 
@@ -67,15 +87,16 @@ class PoolService:
     def __producer_mark_available(self):
         created_guests = self.get_vm_states(['created'])
         for guest in created_guests:
-            if util.nmap_ssh(guest['ip']):
+            if util.nmap_ssh(guest['guest_ip']):
                 guest['state'] = 'available'
+                print('Guest {0} ready for SSH connections!'.format(guest['id']))
 
-    def producerLoop(self, max_vm, vm_timeout):
+    def producer_loop(self):
         while True:
             # delete old VMs, but do not let pool size be 0
             if self.existing_pool_size() > 1:
                 # mark timed-out VMs for destruction
-                self.__producer_mark_timed_out(vm_timeout)
+                self.__producer_mark_timed_out(self.vm_unused_timeout)
 
                 # delete timed-out VMs
                 self.__producer_destroy_timed_out()
@@ -84,15 +105,16 @@ class PoolService:
                 self.__producer_remove_destroyed()
 
             # replenish pool until full
-            create = max_vm - self.existing_pool_size()
+            create = self.max_vm - self.existing_pool_size()
             for _ in range(create):
-                dom, snap = self.qemu.create_guest()
+                dom, snap, guest_ip = self.qemu.create_guest(self.guest_id)
 
                 self.guests.append({
                     'id': self.guest_id,
-                    'state': 'created',  # TODO change to created until boot complete signaled in callback
+                    'state': 'created',
+                    'guest_ip': guest_ip,
                     'connected': 0,
-                    'ips': set(),
+                    'client_ips': set(),
                     'freed_timestamp': -1,
                     'domain': dom,
                     'snapshot': snap
@@ -109,7 +131,7 @@ class PoolService:
         try:
             for vm in self.guests:
                 # if ip is the same, doesn't matter if being used or not
-                if src_ip in vm['ips'] and vm['state'] in ['used', 'using']:
+                if src_ip in vm['client_ips'] and vm['state'] in ['used', 'using']:
                     return vm
         finally:
             self.guest_lock.release()
@@ -161,7 +183,7 @@ class PoolService:
 
         vm['state'] = 'using'
         vm['connected'] += 1
-        vm['ips'].add(src_ip)
+        vm['client_ips'].add(src_ip)
 
         return vm['id'], vm['ip']
 

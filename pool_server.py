@@ -5,7 +5,7 @@ from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
-import qemu_service
+from pool_service import PoolService
 
 
 class PoolServer(Protocol):
@@ -19,12 +19,13 @@ class PoolServer(Protocol):
         if res_op == b'i':
             recv = struct.unpack('!II', data[1:])
 
-            # store received configs in global state
-            self.factory.max_vm = recv[0]
-            self.factory.vm_unused_timeout = recv[1]
-            self.factory.initialised = True
+            # set the pool service thread configs
+            max_vm = recv[0]
+            vm_unused_timeout = recv[1]
+            self.factory.pool_service.set_configs(max_vm, vm_unused_timeout)
 
             # respond with ok
+            self.factory.initialised = True
             response = struct.pack('!cI', b'i', 0)
 
         elif res_op == b'r':
@@ -62,11 +63,13 @@ class PoolServerFactory(Factory):
         self.max_vm = 0
         self.vm_unused_timeout = 0
 
-        # qemu handling
-        self.qemu = None
+        # pool handling
+        self.pool_service = None
 
     def startFactory(self):
-        self.qemu = qemu_service.QemuService()
+        # start the pool thread with default configs
+        self.pool_service = PoolService()
+        reactor.callFromThread(self.pool_service.producer_loop)
 
     def buildProtocol(self, addr):
         print('Received connection from {0}:{1}'.format(addr.host, addr.port))

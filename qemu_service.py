@@ -3,7 +3,6 @@ import libvirt
 import os
 import uuid
 import util
-from time import sleep
 
 import guest_handler
 import network_handler
@@ -33,6 +32,9 @@ class QemuService:
         print('Connection to Qemu closed successfully')
 
     def create_guest(self, guest_id):
+        """
+        Returns an unready domain and its snapshot information
+        """
         guest_mac, guest_ip = util.generate_mac_ip(guest_id)
         unique_id = uuid.uuid4().hex
 
@@ -42,17 +44,7 @@ class QemuService:
             print('Failed to find the domain ' + 'QEmu-ubuntu', file=sys.stderr)
             return None
 
-        # wait until network is up in guest
-        count = 0
-        while not util.nmap_ssh(guest_ip):
-            sleep(1)
-            print('{0} Guest not ready'.format(count))
-            count += 1
-
-        # now backend is ready for connections
-        print('Guest ready for SSH connections!')
-
-        return dom, snapshot
+        return dom, snapshot, guest_ip
 
     def destroy_guest(self, domain, snapshot):
         try:
