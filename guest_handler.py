@@ -22,7 +22,7 @@ def create_guest(connection, mac_address, unique_id):
         raise QemuGuestError()
 
     guest_xml = util.read_file('config_files/default_guest.xml')
-    guest_config = guest_xml.format(guest_name='ubuntu18.04-experimental-' + unique_id,
+    guest_config = guest_xml.format(guest_name='cowrie-ubuntu18.04-' + unique_id,
                                     disk_image=disk_img,
                                     mac_address=mac_address,
                                     network_name='cowrie')

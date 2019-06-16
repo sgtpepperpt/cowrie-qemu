@@ -52,3 +52,13 @@ class QemuService:
             os.remove(snapshot)  # destroy its disk snapshot
         except Exception as error:
             print(error)
+
+    def destroy_all_guests(self):
+        domains = self.conn.listDomainsID()
+        if not domains:
+            print('Could not get domain list', file=sys.stderr)
+
+        for domain_id in domains:
+            d = self.conn.lookupByID(domain_id)
+            if d.name().startswith('cowrie'):
+                d.destroy()

@@ -1,4 +1,4 @@
-from asyncio import Lock
+from threading import Lock
 import util
 from qemu_service import QemuService
 
@@ -31,6 +31,9 @@ class PoolService:
         # configs
         self.max_vm = 2
         self.vm_unused_timeout = 600
+
+        # cleanup older qemu objects
+        self.qemu.destroy_all_guests()
 
     def __del__(self):
         print('Trying clean shutdown')
@@ -89,7 +92,7 @@ class PoolService:
         for guest in created_guests:
             if util.nmap_ssh(guest['guest_ip']):
                 guest['state'] = 'available'
-                print('Guest {0} ready for SSH connections!'.format(guest['id']))
+                print('Guest {0} ready for SSH connections @ {1}!'.format(guest['id'], guest['guest_ip']))
 
     def producer_loop(self):
         while True:

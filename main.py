@@ -71,7 +71,7 @@ def tests(dom, network):
 #     conn.close()
 
 
-q = QemuService()
-q.create_guest()
-id, ip = q.request_guest('')
-q.destroy_guest(id)
+# q = QemuService()
+# q.create_guest()
+# id, ip = q.request_guest('')
+# q.destroy_guest(id)
