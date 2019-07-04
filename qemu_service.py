@@ -23,11 +23,8 @@ class QemuService:
             print('Failed to open connection to qemu:///system', file=sys.stderr)
             raise QemuError()
 
-        # create a network filter
-        self.filter = network_handler.create_filter(self.conn)
-
-        # create a NAT for the guests
-        self.network = network_handler.create_network(self.conn)
+        self.filter = None
+        self.network = None
 
         print('Connection to Qemu established')
 
@@ -37,6 +34,13 @@ class QemuService:
         self.conn.close()  # close libvirt connection
 
         print('Connection to Qemu closed successfully')
+
+    def initialise_networking(self):
+        # create a network filter
+        self.filter = network_handler.create_filter(self.conn)
+
+        # create a NAT for the guests
+        self.network = network_handler.create_network(self.conn)
 
     def create_guest(self, guest_id):
         """
@@ -69,3 +73,23 @@ class QemuService:
             d = self.conn.lookupByID(domain_id)
             if d.name().startswith('cowrie'):
                 d.destroy()
+
+    def destroy_all_networks(self):
+        networks = self.conn.listNetworks()
+        if not networks:
+            print('Could not get network list', file=sys.stderr)
+
+        for network in networks:
+            if network.startswith('cowrie'):
+                n = self.conn.networkLookupByName(network)
+                n.destroy()
+
+    def destroy_all_network_filters(self):
+        network_filters = self.conn.listNWFilters()
+        if not network_filters:
+            print('Could not get network filters list', file=sys.stderr)
+
+        for nw_filter in network_filters:
+            if nw_filter.startswith('cowrie'):
+                n = self.conn.nwfilterLookupByName(nw_filter)
+                n.undefine()

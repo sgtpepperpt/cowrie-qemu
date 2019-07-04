@@ -41,4 +41,5 @@ def create_guest(connection, mac_address, unique_id):
     except libvirt.libvirtError as e:
         print(e)
         print('Guest already booted')
-        return connection.lookupByName('ubuntu18.04-experimental')
+        raise e
+        #return connection.lookupByName('ubuntu18.04-experimental')

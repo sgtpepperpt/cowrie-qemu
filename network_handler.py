@@ -15,7 +15,7 @@ def create_filter(connection):
     except libvirt.libvirtError as e:
         print(e)
         print('Filter already exists')
-        return connection.nwfilterLookupByName('default-filter')
+        return connection.nwfilterLookupByName('cowrie-default-filter')
 
 
 def create_network(connection):

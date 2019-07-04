@@ -39,6 +39,11 @@ class PoolService:
 
         # cleanup older qemu objects
         self.qemu.destroy_all_guests()
+        self.qemu.destroy_all_networks()
+        self.qemu.destroy_all_network_filters()
+
+        # initialise qemu environment
+        self.qemu.initialise_networking()
 
     def __del__(self):
         print('Trying clean shutdown')
@@ -51,6 +56,11 @@ class PoolService:
                 guest['state'] = 'destroyed'
         finally:
             self.guest_lock.release()
+
+        # force destroy remaining stuff
+        self.qemu.destroy_all_guests()
+        self.qemu.destroy_all_networks()
+        self.qemu.destroy_all_network_filters()
 
     def set_configs(self, max_vm, vm_unused_timeout):
         self.max_vm = max_vm
