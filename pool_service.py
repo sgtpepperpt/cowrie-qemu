@@ -43,7 +43,7 @@ class PoolService:
         self.qemu.destroy_all_network_filters()
 
         # initialise qemu environment
-        self.qemu.initialise_networking()
+        self.qemu.initialise_environment()
 
     def __del__(self):
         print('Trying clean shutdown')

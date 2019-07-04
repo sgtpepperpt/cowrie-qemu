@@ -39,7 +39,5 @@ def create_guest(connection, mac_address, unique_id):
         print('Guest ' + dom.name() + ' has booted', file=sys.stderr)
         return dom, disk_img
     except libvirt.libvirtError as e:
-        print(e)
-        print('Guest already booted')
+        print('Error booting guest: {0}'.format(e))
         raise e
-        #return connection.lookupByName('ubuntu18.04-experimental')

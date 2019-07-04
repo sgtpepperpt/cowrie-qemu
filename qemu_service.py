@@ -35,7 +35,10 @@ class QemuService:
 
         print('Connection to Qemu closed successfully')
 
-    def initialise_networking(self):
+    def initialise_environment(self):
+        """
+        Initialises Qemu/libvirt environment needed to run guests. Namely starts networks and network filters.
+        """
         # create a network filter
         self.filter = network_handler.create_filter(self.conn)
 
