@@ -1,9 +1,12 @@
+# Copyright (c) 2019 Guilherme Borges <guilhermerosasborges@gmail.com>
+# See the COPYRIGHT file for more information
+
 import subprocess
 import time
 
 
-def ping():
-    out = subprocess.run(['ping', '-c 1', '192.168.150.15'], capture_output=True)
+def ping(guest_ip):
+    out = subprocess.run(['ping', '-c 1', guest_ip], capture_output=True)
     return out.returncode == 0
 
 
@@ -19,7 +22,8 @@ def read_file(file_name):
 
 def generate_mac_ip(guest_id):
     # TODO support more
-    mac = 'aa:bb:cc:dd:ee:' + hex(guest_id)[2:]
+    hex_id = hex(guest_id)[2:]
+    mac = 'aa:bb:cc:dd:ee:' + hex_id.zfill(2)
     ip = '192.168.150.' + str(guest_id)
     return mac, ip
 

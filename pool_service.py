@@ -1,5 +1,10 @@
+# Copyright (c) 2019 Guilherme Borges <guilhermerosasborges@gmail.com>
+# See the COPYRIGHT file for more information
+
 from threading import Lock
 import util
+import os
+
 from qemu_service import QemuService
 
 
@@ -28,7 +33,7 @@ class PoolService:
         self.guest_id = 2
         self.guest_lock = Lock()
 
-        # configs
+        # default configs
         self.max_vm = 2
         self.vm_unused_timeout = 600
 
@@ -78,6 +83,7 @@ class PoolService:
         for vm in unavailable_vms:
             try:
                 self.qemu.destroy_guest(vm['domain'], vm['snapshot'])
+                os.remove(vm['snapshot'])
                 vm['state'] = 'destroyed'
             except Exception:
                 pass
@@ -198,5 +204,6 @@ class PoolService:
                     vm['state'] = 'used'
                     vm['freed_timestamp'] = util.now()
                     vm['connected'] -= 1
+                    return
         finally:
             self.guest_lock.release()

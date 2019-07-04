@@ -17,7 +17,7 @@ def create_guest(connection, mac_address, unique_id):
     version_tag = 'ubuntu18.04'
 
     # create a disk snapshot to be used by the guest
-    source_img = '/home/gb/Repositories/qemu/ubuntu18.04.qcow2'
+    source_img = '/home/gb/Repositories/qemu/ubuntu18.04.qcow2.bak'
     disk_img = '/home/gb/Repositories/qemu/snapshot-{0}-{1}-qcow2.img'.format(version_tag, unique_id)
 
     if not snapshot_handler.create_disk_snapshot(source_img, disk_img):

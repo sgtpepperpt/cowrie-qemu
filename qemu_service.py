@@ -1,3 +1,6 @@
+# Copyright (c) 2019 Guilherme Borges <guilhermerosasborges@gmail.com>
+# See the COPYRIGHT file for more information
+
 import sys
 import libvirt
 import os
@@ -20,6 +23,9 @@ class QemuService:
             print('Failed to open connection to qemu:///system', file=sys.stderr)
             raise QemuError()
 
+        # create a network filter
+        self.filter = network_handler.create_filter(self.conn)
+
         # create a NAT for the guests
         self.network = network_handler.create_network(self.conn)
 
@@ -27,6 +33,7 @@ class QemuService:
 
     def __del__(self):
         self.network.destroy()  # destroy transient network
+        self.filter.undefine()  # destroy network filter
         self.conn.close()  # close libvirt connection
 
         print('Connection to Qemu closed successfully')

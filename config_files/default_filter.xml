@@ -5,13 +5,9 @@
        IP address the VM is using. -->
   <filterref filter='clean-traffic'/>
 
-  <!-- enable TCP ports 22 (ssh) and 80 (http) to be reachable -->
+  <!-- enable TCP port 22 (ssh) -->
   <rule action='accept' direction='in'>
     <tcp dstportstart='22'/>
-  </rule>
-
-  <rule action='accept' direction='in'>
-    <tcp dstportstart='80'/>
   </rule>
 
   <!-- enable general ICMP traffic to be initiated by the VM;
@@ -26,7 +22,7 @@
   </rule>
 
   <!-- drop all other traffic -->
-  <rule action='accept' direction='inout'>
+  <rule action='drop' direction='inout'>
     <all/>
   </rule>
 
