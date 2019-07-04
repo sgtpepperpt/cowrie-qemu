@@ -1,3 +1,6 @@
+# Copyright (c) 2019 Guilherme Borges <guilhermerosasborges@gmail.com>
+# See the COPYRIGHT file for more information
+
 import struct
 
 from twisted.internet.protocol import Protocol

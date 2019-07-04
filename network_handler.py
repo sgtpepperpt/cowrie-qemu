@@ -1,7 +1,21 @@
+# Copyright (c) 2019 Guilherme Borges <guilhermerosasborges@gmail.com>
+# See the COPYRIGHT file for more information
+
 import sys
 import libvirt
 
 import util
+
+
+def create_filter(connection):
+    filter_xml = util.read_file('config_files/default_filter.xml')
+
+    try:
+        return connection.nwfilterDefineXML(filter_xml)
+    except libvirt.libvirtError as e:
+        print(e)
+        print('Filter already exists')
+        return connection.nwfilterLookupByName('default-filter')
 
 
 def create_network(connection):
