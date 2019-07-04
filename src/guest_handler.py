@@ -1,7 +1,6 @@
 # Copyright (c) 2019 Guilherme Borges <guilhermerosasborges@gmail.com>
 # See the COPYRIGHT file for more information
 
-import os
 import sys
 import libvirt
 
@@ -24,7 +23,7 @@ def create_guest(connection, mac_address, unique_id):
         print('There was a problem creating the disk snapshot.', file=sys.stderr)
         raise QemuGuestError()
 
-    guest_xml = util.read_file('config_files/default_guest.xml')
+    guest_xml = util.read_file('../config_files/default_guest.xml')
     guest_config = guest_xml.format(guest_name='cowrie-ubuntu18.04-' + unique_id,
                                     disk_image=disk_img,
                                     mac_address=mac_address,

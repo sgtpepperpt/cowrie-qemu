@@ -8,7 +8,7 @@ import util
 
 
 def create_filter(connection):
-    filter_xml = util.read_file('config_files/default_filter.xml')
+    filter_xml = util.read_file('../config_files/default_filter.xml')
 
     try:
         return connection.nwfilterDefineXML(filter_xml)
@@ -19,7 +19,7 @@ def create_filter(connection):
 
 
 def create_network(connection):
-    network_xml = util.read_file('config_files/default_network.xml')
+    network_xml = util.read_file('../config_files/default_network.xml')
 
     sample_host = '<host mac=\'{mac_address}\' name=\'{name}\' ip=\'{ip_address}\'/>\n'
     hosts = ''

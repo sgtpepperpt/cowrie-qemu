@@ -2,10 +2,10 @@
 # See the COPYRIGHT file for more information
 
 from threading import Lock
-import util
 import os
 
 from qemu_service import QemuService
+import util
 
 
 class NoAvailableVMs(Exception):

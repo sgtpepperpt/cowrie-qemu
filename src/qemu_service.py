@@ -5,10 +5,10 @@ import sys
 import libvirt
 import os
 import uuid
-import util
 
 import guest_handler
 import network_handler
+import util
 
 
 class QemuError(Exception):
