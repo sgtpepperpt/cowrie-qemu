@@ -6,7 +6,7 @@ import struct
 from twisted.internet.protocol import Protocol
 from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ServerEndpoint
-from twisted.internet import reactor
+from twisted.internet import reactor, threads
 
 from pool_service import PoolService
 
@@ -72,7 +72,7 @@ class PoolServerFactory(Factory):
     def startFactory(self):
         # start the pool thread with default configs
         self.pool_service = PoolService()
-        reactor.callFromThread(self.pool_service.producer_loop)
+        threads.deferToThread(self.pool_service.producer_loop)
 
     def buildProtocol(self, addr):
         print('Received connection from {0}:{1}'.format(addr.host, addr.port))
