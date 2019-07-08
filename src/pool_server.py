@@ -8,8 +8,7 @@ from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor, threads
 
-from pool_service import PoolService
-
+from pool_service import PoolService, NoAvailableVMs
 
 class PoolServer(Protocol):
     def __init__(self, factory):
@@ -39,14 +38,20 @@ class PoolServer(Protocol):
             attacker_ip = recv[0].decode()
 
             print('Requesting a VM for attacker @ {0}'.format(attacker_ip))
-            guest_id, guest_ip = self.factory.pool_service.request_vm(attacker_ip)
-            print('Providing VM id {0}'.format(guest_id))
 
-            ssh_port = 22
-            telnet_port = 23
+            try:
+                guest_id, guest_ip = self.factory.pool_service.request_vm(attacker_ip)
+                print('Providing VM id {0}'.format(guest_id))
 
-            fmt = '!cIIH{0}sHH'.format(len(guest_ip))
-            response = struct.pack(fmt, b'r', 0, guest_id, len(guest_ip), guest_ip.encode(), ssh_port, telnet_port)
+                ssh_port = 22
+                telnet_port = 23
+
+                fmt = '!cIIH{0}sHH'.format(len(guest_ip))
+                response = struct.pack(fmt, b'r', 0, guest_id, len(guest_ip), guest_ip.encode(), ssh_port, telnet_port)
+
+            except NoAvailableVMs as _:
+                print('No VM available, returning error code')
+                response = struct.pack('!cI', b'r', 1)
 
         elif res_op == b'f':
             recv = struct.unpack('!I', data[1:])
