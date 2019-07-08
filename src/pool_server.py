@@ -36,20 +36,23 @@ class PoolServer(Protocol):
             ip_len = recv[0]
 
             recv = struct.unpack('!{0}s'.format(ip_len), data[3:])
-            attacker_ip = recv[0]
+            attacker_ip = recv[0].decode()
 
-            # TODO send same data for now
-            vm_id = 100
-            honey_ip = b'127.0.0.1'
-            ssh_port = 2022
-            telnet_port = 2023
+            print('Requesting a VM for attacker @ {0}'.format(attacker_ip))
+            guest_id, guest_ip = self.factory.pool_service.request_vm(attacker_ip)
+            print('Providing VM id {0}'.format(guest_id))
 
-            fmt = '!cIIH{0}sHH'.format(len(honey_ip))
-            response = struct.pack(fmt, b'r', 0, vm_id, len(honey_ip), honey_ip, ssh_port, telnet_port)
+            ssh_port = 22
+            telnet_port = 23
+
+            fmt = '!cIIH{0}sHH'.format(len(guest_ip))
+            response = struct.pack(fmt, b'r', 0, guest_id, len(guest_ip), guest_ip.encode(), ssh_port, telnet_port)
 
         elif res_op == b'f':
             recv = struct.unpack('!I', data[1:])
             vm_id = recv[0]
+
+            print('Freeing VM {0}'.format(vm_id))
 
             # free the vm
             pass

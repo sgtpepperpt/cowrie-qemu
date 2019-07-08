@@ -79,12 +79,13 @@ class PoolService:
         """
         self.guest_lock.acquire()
         try:
-            for vm in self.guests:
-                timed_out = vm['freed_timestamp'] + vm_timeout * 1000 < util.now()
+            for guest in self.guests:
+                timed_out = guest['freed_timestamp'] + vm_timeout * 1000 < util.now()
 
                 # only mark VMs not in use
-                if vm['state'] == 'used' and timed_out:
-                    vm['state'] = 'unavailable'
+                if guest['state'] == 'used' and timed_out and guest['connected'] == 0:
+                    print('Guest {0} ({1}) marked for deletion (timed-out)'.format(guest['id'], guest['guest_ip']))
+                    guest['state'] = 'unavailable'
         finally:
             self.guest_lock.release()
 
@@ -190,21 +191,23 @@ class PoolService:
         # first check if there is one for the ip
         vm = self.__consumers_get_vm_ip(src_ip)
 
-        # try to get an available VM
         if not vm:
+            # try to get an available VM
             vm = self.__consumers_get_available_vm()
 
         # or get any other if policy is to share VMs
         if not vm and share_vm:
             vm = self.__consumers_get_any_vm()
-        else:
+
+        # raise excaption if a valid VM was not found
+        if not vm:
             raise NoAvailableVMs()
 
         vm['state'] = 'using'
         vm['connected'] += 1
         vm['client_ips'].add(src_ip)
 
-        return vm['id'], vm['ip']
+        return vm['id'], vm['guest_ip']
 
     def free_vm(self, vm_id):
         self.guest_lock.acquire()
