@@ -55,7 +55,7 @@ class PoolServer(Protocol):
             print('Freeing VM {0}'.format(vm_id))
 
             # free the vm
-            pass
+            self.factory.pool_service.free_vm(vm_id)
 
         if response:
             self.transport.write(response)

@@ -214,9 +214,11 @@ class PoolService:
         try:
             for vm in self.guests:
                 if vm['id'] == vm_id:
-                    vm['state'] = 'used'
                     vm['freed_timestamp'] = util.now()
                     vm['connected'] -= 1
+
+                    if vm['connected'] == 0:
+                        vm['state'] = 'used'
                     return
         finally:
             self.guest_lock.release()
