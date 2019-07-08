@@ -49,11 +49,16 @@ class QemuService:
         """
         Returns an unready domain and its snapshot information
         """
+        # configs
+        base_image = '/home/gb/Repositories/qemu/ubuntu18.04-libvirt.qcow2'
+        snapshot_dir = '/home/gb/Repositories/qemu/'
+
+        # generate networking details
         guest_mac, guest_ip = util.generate_mac_ip(guest_id)
-        unique_id = uuid.uuid4().hex
+        guest_unique_id = uuid.uuid4().hex
 
         # create a single guest
-        dom, snapshot = guest_handler.create_guest(self.conn, guest_mac, unique_id)
+        dom, snapshot = guest_handler.create_guest(self.conn, guest_mac, guest_unique_id, base_image, snapshot_dir)
         if dom is None:
             print('Failed to create guest', file=sys.stderr)
             return None
