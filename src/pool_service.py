@@ -3,6 +3,7 @@
 
 from threading import Lock
 import os
+import time
 
 from qemu_service import QemuService
 import util
@@ -109,7 +110,9 @@ class PoolService:
         for guest in created_guests:
             if util.nmap_ssh(guest['guest_ip']):
                 guest['state'] = 'available'
-                print('Guest {0} ready for SSH connections @ {1}!'.format(guest['id'], guest['guest_ip']))
+                boot_time = int(time.time() - guest['start_timestamp'])
+                print('Guest {0} ready for SSH connections @ {1}! (boot {2}s)'.format(guest['id'],
+                                                                                      guest['guest_ip'], boot_time))
 
     def producer_loop(self):
         while True:
@@ -121,8 +124,8 @@ class PoolService:
                 # delete timed-out VMs
                 self.__producer_destroy_timed_out()
 
-                # remove destroyed from list
-                self.__producer_remove_destroyed()
+            # remove destroyed from list
+            self.__producer_remove_destroyed()
 
             # replenish pool until full
             create = self.max_vm - self.existing_pool_size()
@@ -132,6 +135,7 @@ class PoolService:
                 self.guests.append({
                     'id': self.guest_id,
                     'state': 'created',
+                    'start_timestamp': time.time(),
                     'guest_ip': guest_ip,
                     'connected': 0,
                     'client_ips': set(),

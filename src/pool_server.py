@@ -65,10 +65,6 @@ class PoolServerFactory(Factory):
     def __init__(self):
         self.initialised = False
 
-        # configs, come from client
-        self.max_vm = 0
-        self.vm_unused_timeout = 0
-
         # pool handling
         self.pool_service = None
 

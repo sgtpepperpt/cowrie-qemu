@@ -55,7 +55,7 @@ class QemuService:
         # create a single guest
         dom, snapshot = guest_handler.create_guest(self.conn, guest_mac, unique_id)
         if dom is None:
-            print('Failed to find the domain ' + 'QEmu-ubuntu', file=sys.stderr)
+            print('Failed to create guest', file=sys.stderr)
             return None
 
         return dom, snapshot, guest_ip
