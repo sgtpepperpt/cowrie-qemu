@@ -10,6 +10,11 @@
         <tcp dstportstart='22'/>
     </rule>
 
+    <!-- enable TCP port 23 (telnet) -->
+    <rule action='accept' direction='in'>
+        <tcp dstportstart='23'/>
+    </rule>
+
     <!-- enable general ICMP traffic to be initiated by the VM;
     this includes ping traffic -->
     <rule action='accept' direction='inout'>
