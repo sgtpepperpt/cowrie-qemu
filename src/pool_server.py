@@ -10,6 +10,7 @@ from twisted.internet import reactor, threads
 
 from pool_service import PoolService, NoAvailableVMs
 
+
 class PoolServer(Protocol):
     def __init__(self, factory):
         self.factory = factory

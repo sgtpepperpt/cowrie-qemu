@@ -50,7 +50,7 @@ class QemuService:
         Returns an unready domain and its snapshot information
         """
         # configs
-        base_image = '/home/gb/Repositories/qemu/ubuntu18.04-libvirt.qcow2'
+        base_image = '/home/gb/Repositories/qemu/ubuntu18.04-minimal.qcow2'
         snapshot_dir = '/home/gb/Repositories/qemu/'
 
         # generate networking details
