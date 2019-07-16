@@ -42,6 +42,7 @@ class QemuService:
         print('Connection to Qemu established')
 
     def __del__(self):
+        print('Doing Qemu clean shutdown...')
         self.network.destroy()  # destroy transient network
         self.filter.undefine()  # destroy network filter
         self.conn.close()  # close libvirt connection

@@ -146,6 +146,10 @@ class PoolService:
 
                 self.guest_id += 1
 
+                # reset id
+                if self.guest_id == 254:
+                    self.guest_id = 2
+
             # check for created VMs that can become available
             self.__producer_mark_available()
 

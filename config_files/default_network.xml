@@ -1,3 +1,4 @@
+<!-- Copyright (c) 2019 Guilherme Borges <guilhermerosasborges@gmail.com> -->
 <network>
     <name>{network_name}</name>
     <forward mode='nat'/>
