@@ -11,6 +11,19 @@ import network_handler
 import util
 
 
+ubuntu_configs = {
+    'version_tag': 'ubuntu18.04',
+    'config_file': '/home/gb/Repositories/qemu/config_files/default_guest.xml',
+    'base_image': '/home/gb/Repositories/qemu/ubuntu18.04-minimal.qcow2'
+}
+
+wrt_configs = {
+    'version_tag': 'wrt',
+    'config_file': '/home/gb/Repositories/qemu/config_files/wrt_guest.xml',
+    'base_image': '/home/gb/Repositories/qemu/wrt/root.qcow2'
+}
+
+
 class QemuError(Exception):
     pass
 
@@ -50,7 +63,6 @@ class QemuService:
         Returns an unready domain and its snapshot information
         """
         # configs
-        base_image = '/home/gb/Repositories/qemu/ubuntu18.04-minimal.qcow2'
         snapshot_dir = '/home/gb/Repositories/qemu/'
 
         # generate networking details
@@ -58,7 +70,7 @@ class QemuService:
         guest_unique_id = uuid.uuid4().hex
 
         # create a single guest
-        dom, snapshot = guest_handler.create_guest(self.conn, guest_mac, guest_unique_id, base_image, snapshot_dir)
+        dom, snapshot = guest_handler.create_guest(self.conn, guest_mac, guest_unique_id, snapshot_dir, wrt_configs)
         if dom is None:
             print('Failed to create guest', file=sys.stderr)
             return None
