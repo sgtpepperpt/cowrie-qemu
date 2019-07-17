@@ -152,6 +152,7 @@ class PoolService:
 
             # check for created VMs that can become available
             self.__producer_mark_available()
+            time.sleep(5)
 
     # Consumers
     def __consumers_get_vm_ip(self, src_ip):

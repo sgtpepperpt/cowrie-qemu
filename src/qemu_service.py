@@ -19,7 +19,7 @@ ubuntu_configs = {
 
 wrt_configs = {
     'version_tag': 'wrt',
-    'config_file': '/home/gb/Repositories/qemu/config_files/wrt_guest.xml',
+    'config_file': '/home/gb/Repositories/qemu/config_files/wrt_arm_guest.xml',
     'base_image': '/home/gb/Repositories/qemu/wrt/root.qcow2'
 }
 
