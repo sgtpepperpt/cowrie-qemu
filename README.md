@@ -1,3 +1,5 @@
+**Note:** This project's code has been integrated into my Cowrie fork: [https://github.com/sgtpepperpt/cowrie](https://github.com/sgtpepperpt/cowrie)
+
 qemu/libvirt Python examples to handle a guest
 
 # Tips
